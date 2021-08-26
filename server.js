@@ -101,17 +101,23 @@ app.post('/api/users/:_id/exercises', (req, res) => {
             }
         }
     
-         console.log(response);
+        console.log(response);
         res.json(response);
     });
-    
-    
 });
 
 
 app.get('/api/users/:_id/logs', (req, res) => {
     User.findById(req.params._id, (err, user) => {
-        res.json(user)
+
+        let ress = {
+            _id : user.id,
+            username : user.username,
+            log : user.log,
+            count : user.log.length
+        }
+        res.json(ress)
+        //res.send({count : user.log.length})
     })
 });
 
