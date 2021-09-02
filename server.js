@@ -57,7 +57,9 @@ app.post('/api/users', (req, res) => {
 
 
 
-
+function DateChecker(date, from, to){
+    return date >= from && date <= to
+}
 
 
 app.post('/api/users/:_id/exercises', (req, res) => {
@@ -108,29 +110,44 @@ app.get('/api/users/:_id/logs', (req, res) => {
 
         let from, to;
         if(req.query.form){
-            from = new Date(req.query.from).getTime();
+            from = new Date(req.query.from);
         }else{
-            from = new Date(0).getTime();
+            from = new Date(0);
         }
         if(req.query.to){
-            to = new Date(req.query.to).getTime();
+            to = new Date(req.query.to);
         }else{
-            to = new Date().getTime();
+            to = new Date();
         }
 
-        if(req.query.limit){
-            ress.log.slice(0, req.query.limit);
-        }
-
-        ress.log.filter( log => {
-            let logDate = new Date(log.date).getTime()
-            return logDate >= from && logDate <= to
-        })
+        console.log(from, to)
 
         ress.log.forEach( log => {
             delete log['_id']
-            log.date = log.date //String(new Date(log.date).toDateString())
+            log.date = new Date(log.date).toDateString() //String(new Date(log.date).toDateString())
         })
+
+
+        // Use Filter
+        ress.logs = ress.log.filter( log => {
+            //let logDate = new Date(log.date).toISOString().substring(0, 10)
+            log.date >= from
+        })
+
+        /*
+        ress.log.filter( log => {
+            //let logDate = new Date(log.date).toISOString().substring(0, 10)
+            log.date <= to
+        })
+
+
+        */
+
+         // Apply Limit
+        if(req.query.limit){
+            ress.log.slice(0, parseInt(req.query.limit));
+        }
+
 
         ress.count = ress.log.length
 
@@ -139,6 +156,9 @@ app.get('/api/users/:_id/logs', (req, res) => {
         //res.send({count : user.log.length})
     })
 });
+
+
+
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
