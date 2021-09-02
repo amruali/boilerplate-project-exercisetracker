@@ -67,41 +67,30 @@ app.post('/api/users/:_id/exercises', (req, res) => {
     if (req.body.date){
         exercises = new Exercises({
             description : req.body.description,
-            date : new Date(req.body.date),
+            date : String(new Date(req.body.date).toDateString()),
             duration : parseInt(req.body.duration)
         })
     }else{
         exercises = new Exercises({
             description : req.body.description,
-            date : new Date(),
+            date : String(new Date().toDateString()),
             duration : parseInt(req.body.duration)
         })
     }
    
-    console.log()
-    console.log(req.params._id)
+    
 
     User.findByIdAndUpdate(req.params._id , {$push: {log:exercises}}, {new : true}, (err, user) => {
         if(err) return res.json(err)
 
-    
-        //console.log(user)
         let  response = {
+            username : user.username,
             description : exercises.description,
             duration : exercises.duration,
-            date : exercises.date,
-            
-            /*_id : user.id,
-            username : user.username        
-            */
-
-            user : {
-                _id : user.id,
-                username : user.username
-            }
+            date : exercises.date,       
+             _id : user.id           
         }
-    
-        console.log(response);
+     
         res.json(response);
     });
 });
@@ -111,11 +100,41 @@ app.get('/api/users/:_id/logs', (req, res) => {
     User.findById(req.params._id, (err, user) => {
 
         let ress = {
-            _id : user.id,
             username : user.username,
-            log : user.log,
-            count : user.log.length
+            count : user.log.length,
+            _id : user.id,         
+            log : user.log
         }
+
+        let from, to;
+        if(req.query.form){
+            from = new Date(req.query.from).getTime();
+        }else{
+            from = new Date(0).getTime();
+        }
+        if(req.query.to){
+            to = new Date(req.query.to).getTime();
+        }else{
+            to = new Date().getTime();
+        }
+
+        if(req.query.limit){
+            ress.log.slice(0, req.query.limit);
+        }
+
+        ress.log.filter( log => {
+            let logDate = new Date(log.date).getTime()
+            return logDate >= from && logDate <= to
+        })
+
+        ress.log.forEach( log => {
+            delete log['_id']
+            log.date = log.date //String(new Date(log.date).toDateString())
+        })
+
+        ress.count = ress.log.length
+
+        console.log(ress);
         res.json(ress)
         //res.send({count : user.log.length})
     })
