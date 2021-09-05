@@ -129,23 +129,25 @@ app.get('/api/users/:_id/logs', (req, res) => {
 
 
         // Use Filter
-        ress.logs = ress.log.filter( log => {
+        /*ress.log = */ress.log.filter( function(log) {
             //let logDate = new Date(log.date).toISOString().substring(0, 10)
-            log.date >= from
+            return log.date >= from
         })
 
-        /*
-        ress.log.filter( log => {
+        
+        ress.log.filter( function(log){
             //let logDate = new Date(log.date).toISOString().substring(0, 10)
-            log.date <= to
+            return log.date <= to
         })
 
 
-        */
+        
 
          // Apply Limit
         if(req.query.limit){
-            ress.log.slice(0, parseInt(req.query.limit));
+            console.log(req.query.limit);
+            console.log(parseInt(req.query.limit));
+            ress.log = ress.log.slice(0, parseInt(req.query.limit));
         }
 
 
